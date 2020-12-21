@@ -21,7 +21,7 @@
   var parseTime = d3.timeParse("%Y-%m-%d");
 
   var x = d3.scaleTime().range([0, width]);
-  var y = d3.scaleLinear().domain([0, 40]).range([height, 0]);
+  var y = d3.scaleLinear().range([height, 0]);
 
   var svg = d3.select("#my_activity")
     .append("svg")
@@ -30,7 +30,11 @@
     .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-  d3.csv("output.csv", function(error, data) {
+  var colorScale = d3.scaleLinear()
+    .domain([0, 250, 500])
+    .range(["#D4AF37", "#008080", "#A40000"]);
+
+  d3.csv("daily_activity.csv", function(error, data) {
 
     data.forEach(function(d) {
       d.date = parseTime(d.date);
@@ -38,7 +42,7 @@
     });
 
     x.domain(d3.extent(data, function(d) { return d.date; }));
-    //y.domain([0, d3.max(data, function(d) { return d.dist; })]);
+    y.domain([0, d3.max(data, function(d) { return d.dist; })]);
 
     svg.append("g")
        .attr("class", "axis")
@@ -85,8 +89,11 @@
        .append("circle") // A circle elem is inserted for each placeholder node
        .attr("cx", function (d) { return x(d.date); } )
        .attr("cy", function (d) { return y(d.dist); } )
-       .attr("r", 3)
-       .style("fill", "#D4AF37");
+       .attr("r", 4)
+       .style('fill', function (d, i) {
+         return colorScale(y(d.dist));
+       })
+       .attr('fill-opacity', 0.7);
   })
   </script>
 </body>
