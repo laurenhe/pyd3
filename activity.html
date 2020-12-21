@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<style>
+.axis {
+  font: 12px arial;
+  font-weight: 700;
+  stroke: #a9a9a9;
+}
+</style>
+
+<div id="my_activity"></div>
+
+<body>
+  <script src="https://d3js.org/d3.v4.js"></script>
+  <script>
+  var margin = {top: 20, right: 20, bottom: 100, left: 50},
+      width = 960 - margin.left - margin.right,
+      height = 500 - margin.top - margin.bottom;
+
+  var parseTime = d3.timeParse("%Y-%m-%d");
+
+  var x = d3.scaleTime().range([0, width]);
+  var y = d3.scaleLinear().domain([0, 40]).range([height, 0]);
+
+  var svg = d3.select("#my_activity")
+    .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  d3.csv("output.csv", function(error, data) {
+
+    data.forEach(function(d) {
+      d.date = parseTime(d.date);
+      d.dist = +d.dist;
+    });
+
+    x.domain(d3.extent(data, function(d) { return d.date; }));
+    //y.domain([0, d3.max(data, function(d) { return d.dist; })]);
+
+    svg.append("g")
+       .attr("class", "axis")
+       .attr("transform", "translate(0," + height + ")")
+       .call(d3.axisBottom(x)
+              .tickFormat(d3.timeFormat("%Y-%m-%d")))
+       .selectAll("text")
+       .style("text-anchor", "end")
+       .attr("dx", "-.8em")
+       .attr("dy", ".15em")
+       .attr("transform", "rotate(-65)");
+
+    svg.append("text")
+       .attr("transform",
+             "translate(" + (width) + " ," +
+                            (height + margin.top + 20) + ")")
+       .attr("font-family", "sans-serif")
+       .attr("font-size", "14px")
+       .attr("font-weight", "bolder")
+       .attr("fill", "#696969")
+       .style("text-anchor", "middle")
+       .text("Date");
+
+    svg.append("g")
+       .attr("class", "axis")
+       .call(d3.axisLeft(y));
+
+    svg.append("text")
+       .attr("transform", "rotate(-90)")
+       .attr("y", 0 - margin.left)
+       .attr("x", 0 - (height / 2))
+       .attr("dy", "1em")
+       .attr("font-family", "sans-serif")
+       .attr("font-size", "14px")
+       .attr("font-weight", "bolder")
+       .attr("fill", "#696969")
+       .style("text-anchor", "middle")
+       .text("Dist");
+
+    svg.append('g')
+       .selectAll("dot")
+       .data(data)
+       .enter()          // Returns reference to placeholder nodes for each data elem that does not have corresponding DOM element
+       .append("circle") // A circle elem is inserted for each placeholder node
+       .attr("cx", function (d) { return x(d.date); } )
+       .attr("cy", function (d) { return y(d.dist); } )
+       .attr("r", 3)
+       .style("fill", "#D4AF37");
+  })
+  </script>
+</body>
