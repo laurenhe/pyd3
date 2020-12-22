@@ -7,6 +7,16 @@
   font-weight: 700;
   stroke: #a9a9a9;
 }
+
+.tooltip {
+  position: absolute;
+  font: 12px arial;
+  font-weight: bold;
+  width:  auto;
+  height: auto;
+  pointer-events: none;
+  background-color: white;
+}
 </style>
 
 <div id="my_activity"></div>
@@ -34,6 +44,34 @@
     .domain([0, 250, 500])
     .range(["#D4AF37", "#008080", "#A40000"]);
 
+  var tooltip = d3.select("#my_activity").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+
+  var tipMouseover = function(d) {
+      var color = colorScale(y(d.dist));
+      var html  = "<br/>" + "<span style='color:" + color + ";'>" + d.dist + " mi </span><br/>";
+
+      tooltip.html(html)
+          .style("left", (d3.event.pageX + 15) + "px")
+          .style("top", (d3.event.pageY - 28) + "px")
+        .transition()
+          .duration(200)
+          .style("opacity", .9);
+  };
+
+  var tipMouseout = function(d) {
+      tooltip.transition()
+          .duration(300)
+          .style("opacity", 0);
+  };
+
+  // tooltip mouseout event handler
+  var tipMouseout = function(d) {
+      tooltip.transition()
+          .duration(300) // ms
+          .style("opacity", 0); // don't care about position!
+  };
   d3.csv("daily_activity.csv", function(error, data) {
 
     data.forEach(function(d) {
@@ -93,7 +131,9 @@
        .style('fill', function (d, i) {
          return colorScale(y(d.dist));
        })
-       .attr('fill-opacity', 0.7);
+       .attr('fill-opacity', 0.7)
+       .on("mouseover", tipMouseover)
+       .on("mouseout", tipMouseout);
   })
   </script>
 </body>
